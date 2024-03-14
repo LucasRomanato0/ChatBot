@@ -1,4 +1,4 @@
-# Comandos de ambiente virtual python
+# Comandos de ambiente virtual python:
 
 ## Criar
 
