@@ -7,6 +7,11 @@ from langchain.prompts import (
     ChatPromptTemplate,
 )
 from langchain_core.output_parsers import StrOutputParser
+from langchain_community.vectorstores import Chroma
+from langchain_openai import OpenAIEmbeddings
+from langchain.schema.runnable import RunnablePassthrough
+
+REVIEWS_CHROMA_PATH = "chroma_data/"
 
 dotenv.load_dotenv()
 
@@ -44,4 +49,16 @@ chat_model = ChatOpenAI(model="gpt-3.5-turbo-0125", temperature=0)
 
 output_parser = StrOutputParser() # fromata a responsta
 
-review_chain = review_prompt_template | chat_model | output_parser
+reviwes_vector_db = Chroma(
+    persist_directory=REVIEWS_CHROMA_PATH,
+    embedding_function=OpenAIEmbeddings(),
+)
+
+reviews_retriver = reviwes_vector_db.as_retriever(k=10) # k=10 - 10 respostas (mais similares com a pergunta) do banco
+
+review_chain = (
+    {"context": reviews_retriver, "question": RunnablePassthrough()}
+    | review_prompt_template
+    | chat_model
+    | output_parser
+)
